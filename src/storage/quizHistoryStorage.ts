@@ -1,0 +1,37 @@
+import { Alert } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
+import { HistoryProps } from '@components/HistoryCard'
+
+const HISTORY_COLLECTION = '@quiz-app:history'
+
+export async function historyGetAll() {
+  try {
+    const storage = await AsyncStorage.getItem(HISTORY_COLLECTION)
+    const history: HistoryProps[] = storage ? JSON.parse(storage) : []
+
+    return history
+  } catch (error) {
+    Alert.alert('Opa', 'Não foi possível obter o histórico.')
+
+    return []
+  }
+}
+
+export async function historyAdd(newHistory: HistoryProps) {
+  const response = await historyGetAll()
+  const storedHistory = response || []
+
+  const storage = JSON.stringify([...storedHistory, newHistory])
+
+  await AsyncStorage.setItem(HISTORY_COLLECTION, storage)
+}
+
+export async function historyRemove(id: string) {
+  const storage = await historyGetAll()
+
+  const filtered = storage.filter((history) => history.id !== id)
+  const histories = JSON.stringify(filtered)
+
+  await AsyncStorage.setItem(HISTORY_COLLECTION, histories)
+}
